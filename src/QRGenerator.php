@@ -2,9 +2,16 @@
 
 namespace JedenWeb\QRPayment;
 
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\LabelAlignment;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
+use Endroid\QrCode\Label\Alignment\LabelAlignmentLeft;
+use Endroid\QrCode\Label\Font\Font;
 use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\Writer\PngWriter;
+use Exception;
+
 
 /**
  * @author Pavel Jurásek
@@ -12,23 +19,38 @@ use Endroid\QrCode\QrCode;
 class QRGenerator
 {
 
+    /**
+     * @param QRPayment $payment
+     * @return string
+     * @throws Exception
+     */
 	public function create(QRPayment $payment): string
 	{
 		return $this->createFromString($payment->toString());
 	}
 
+    /**
+     * @param string $content
+     * @return string
+     * @throws Exception
+     */
 	public function createFromString(string $content): string
 	{
-		$code = new QrCode($content);
+        $writer = new PngWriter();
+
+        $code = QrCode::create($content);
 		$code->setSize(300);
-
-		$code->setWriterByName('png');
 		$code->setMargin(10);
-		$code->setEncoding('UTF-8');
-		$code->setErrorCorrectionLevel(new ErrorCorrectionLevel(ErrorCorrectionLevel::MEDIUM));
-		$code->setLabel('QR platba', 12, null, LabelAlignment::LEFT);
+		$code->setEncoding(new Encoding('UTF-8'));
+		$code->setErrorCorrectionLevel(new ErrorCorrectionLevelLow());
 
-		return $code->writeString();
+        $label = Label::create('QR platba');
+        $label->setTextColor(new Color(0, 0, 0));
+        $fontPath = $label->getFont()->getPath();
+        $label->setFont(new Font($fontPath, 12));
+        $label->setAlignment(new LabelAlignmentLeft());
+
+		return $writer->write($code, null, $label)->getString();
 	}
 
 }

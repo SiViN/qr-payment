@@ -32,7 +32,8 @@ class QRGeneratorTest extends Tester\TestCase
 		$generator = new QRGenerator;
 
 		$str = $generator->createFromString('SPD*1.0*ACC:CZ2806000000000168540115*AM:450.00*CC:CZK*MSG:PLATBA ZA ZBOZI*CRC32:e8f0bf9e');
-		Assert::matchFile(__DIR__ . '/output.png', $str);
+		$expected = md5(file_get_contents(__DIR__ . '/output.png'));
+        Assert::equal($expected, md5($str));
 	}
 
 }
